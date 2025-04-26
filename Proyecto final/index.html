@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang='es'>
+
+<head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+    <title>Emulador NE555</title>
+    <style>
+        :root {
+            --bg-color: #070707;
+            --primary: #265e0d;
+            --accent: #1c1cdb;
+            --text: #c75959;
+            --input-bg: #030303;
+            --input-border: #000000;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: var(--bg-color); color: #f1f1f1;
+            color: #333;
+        }
+        header {
+            background-color: var(--accent);
+            color: #f1f1f1;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .container {
+            max-width: 700px;
+            margin: 2rem auto;
+            background: var(--primary);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+        }
+        h2 {
+            color: var(--accent);
+        }
+        label, select, input {
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
+        input, select {
+            padding: 0.5rem;
+            border: 1px solid var(--input-border); background-color: var(--input-bg); color: #f1f1f1;
+            border-radius: 8px;
+        }
+        button {
+            margin-top: 1.5rem;
+            padding: 0.7rem 1.5rem;
+            background-color: var(--accent);
+            color: #f1f1f1;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: var(--accent);
+        }
+        .result {
+            margin-top: 1rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Emulador NE555</h1>
+    </header>
+
+    <div class='container'>
+        <h2>Modo Monoastable</h2>
+        <p>Introduce los valores para calcular el tiempo del pulso:</p>
+        <label>Resistencia (R1):</label>
+        <input type='number' id='resistencia' placeholder='Valor' />
+        <select id='unidad_resistencia'>
+            <option value='1'>Ω</option>
+            <option value='1000'>kΩ</option>
+            <option value='1000000'>MΩ</option>
+        </select>
+
+        <label>Capacitancia (C):</label>
+        <input type='number' step='any' id='capacitancia' placeholder='Valor' />
+        <select id='unidad_capacitancia'>
+            <option value='1e-9'>nF</option>
+            <option value='1e-6'>µF</option>
+            <option value='1'>F</option>
+        </select>
+
+        <button onclick='calcularTiempo()'>Calcular</button>
+        <div class='result'>Duración del Pulso (T): <span id='resultado'>-</span> segundos</div>
+    </div>
+
+    <div class='container'>
+        <h2>Modo Astable</h2>
+        <p>Introduce los valores para calcular la frecuencia y el ciclo de trabajo:</p>
+
+        <label>Resistencia (R1):</label>
+        <input type='number' id='resistencia1' placeholder='Valor' />
+        <select id='unidad_r1'>
+            <option value='1'>Ω</option>
+            <option value='1e3'>kΩ</option>
+            <option value='1e6'>MΩ</option>
+        </select>
+
+        <label>Resistencia (R2):</label>
+        <input type='number' id='resistencia2' placeholder='Valor' />
+        <select id='unidad_r2'>
+            <option value='1'>Ω</option>
+            <option value='1e3'>kΩ</option>
+            <option value='1e6'>MΩ</option>
+        </select>
+
+        <label>Capacitancia (C):</label>
+        <input type='number' step='any' id='capacitanciaA' placeholder='Valor' />
+        <select id='unidad_cA'>
+            <option value='1e-9'>nF</option>
+            <option value='1e-6'>µF</option>
+            <option value='1'>F</option>
+        </select>
+
+        <button onclick='calcularAstable()'>Calcular</button>
+        <div class='result'>Frecuencia (f): <span id='frecuencia'>-</span> Hz</div>
+        <div class='result'>Ciclo de Trabajo (D): <span id='ciclo'>-</span> %</div>
+    </div>
+
+    <script>
+        function calcularTiempo() {
+            let R = parseFloat(document.getElementById("resistencia").value) * parseFloat(document.getElementById("unidad_resistencia").value);
+            let C = parseFloat(document.getElementById("capacitancia").value) * parseFloat(document.getElementById("unidad_capacitancia").value);
+            if (isNaN(R) || isNaN(C) || R <= 0 || C <= 0) {
+                alert("Ingrese valores válidos para R y C");
+                return;
+            }
+            let T = 1.1 * R * C;
+            document.getElementById("resultado").innerText = T.toFixed(6);
+        }
+
+        function calcularAstable() {
+            let R1 = parseFloat(document.getElementById("resistencia1").value) * parseFloat(document.getElementById("unidad_r1").value);
+            let R2 = parseFloat(document.getElementById("resistencia2").value) * parseFloat(document.getElementById("unidad_r2").value);
+            let C = parseFloat(document.getElementById("capacitanciaA").value) * parseFloat(document.getElementById("unidad_cA").value);
+            if (isNaN(R1) || isNaN(R2) || isNaN(C) || R1 <= 0 || R2 <= 0 || C <= 0) {
+                alert("Ingrese valores válidos para R1, R2 y C");
+                return;
+            }
+            let frecuencia = 1.44 / ((R1 + 2 * R2) * C);
+            let cicloTrabajo = ((R1 + R2) / (R1 + 2 * R2)) * 100;
+            document.getElementById("frecuencia").innerText = frecuencia.toFixed(2);
+            document.getElementById("ciclo").innerText = cicloTrabajo.toFixed(2);
+        }
+    </script>
+</body>
+</html>
